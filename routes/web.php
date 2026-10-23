@@ -17,3 +17,12 @@ Route::get('/bienvenue', function () {
         'cours' => 'Atelier Framework Côté Serveur',
     ]);
 });
+Route::get('/heure', function () {
+    return view('heure');
+});
+Route::get('/a-propos', function () {
+    return view('a-propos', [
+        'auteur' => 'heni anas',
+        'groupe' => 'MDW32',
+    ]);
+});
