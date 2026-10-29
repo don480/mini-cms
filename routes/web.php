@@ -27,7 +27,7 @@ Route::get('/a-propos', function () {
         'groupe' => 'MDW32',
     ]);
 });
-Route::get('/', [PageController::class, 'home'])->name('home');
+Route::get('/heure', [PageController::class, 'time'])->name('time');
 
 Route::get('/a-propos', [PageController::class, 'about'])->name('about');
    Route::prefix('posts')->name('posts.')->group(function () {
