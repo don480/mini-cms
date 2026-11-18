@@ -6,13 +6,15 @@ Auteur : heni anas, groupe MDW32.
 
 Mini-CMS évoluera au fil du semestre vers une petite plateforme de publication : pages publiques, back-office authentifié, API JSON et tests Pest. Chaque session se termine par un tag Git (`lab-01`, `lab-01b`, puis un tag par session).
 
-## État actuel (session 05, tag lab-03)
+## État actuel (session 06, tag lab-03b)
 
-- Pages construites avec des composants Blade anonymes : `x-navbar`, `x-nav-link`, `x-post-card`, `x-alert`, `x-page-header`.
+- Pages construites avec des composants Blade anonymes : `x-navbar`, `x-nav-link`, `x-post-card`, `x-post-form`, `x-alert`, `x-page-header`.
 - Lien actif dans la navigation avec `request()->routeIs()`.
-- Articles stockés dans SQLite et lus avec Eloquent; les listes sont paginées et les brouillons sont signalés.
-- Création d'article avec validation serveur, liaison de modèle sur la page de détail et affichage des trois derniers articles publiés sur l'accueil.
-- Tests Pest pour les pages, les articles, le formulaire et les erreurs de validation.
+- CRUD complet des articles : liste, détail, création, modification et suppression avec confirmation.
+- Colonne `excerpt` ajoutée par une nouvelle migration; les cartes affichent l'extrait saisi ou le début du contenu.
+- Scope Eloquent `published` utilisé sur l'accueil et dans l'archive.
+- Publication et dépublication depuis la page de détail.
+- Tests Pest des lectures (`PostPagesTest`) et des écritures (`PostWriteTest`) : `php artisan test`.
 
 ## Routes disponibles
 
@@ -26,6 +28,10 @@ Mini-CMS évoluera au fil du semestre vers une petite plateforme de publication 
 | GET | `/posts/create` | `posts.create` | `PostController@create` |
 | POST | `/posts` | `posts.store` | `PostController@store` |
 | GET | `/posts/{post}` | `posts.show` | `PostController@show` |
+| GET | `/posts/{post}/edit` | `posts.edit` | `PostController@edit` |
+| PUT | `/posts/{post}` | `posts.update` | `PostController@update` |
+| DELETE | `/posts/{post}` | `posts.destroy` | `PostController@destroy` |
+| PATCH | `/posts/{post}/publication` | `posts.publication` | `PostController@togglePublication` |
 
 ## Prérequis
 
@@ -102,3 +108,9 @@ Ouvrir ensuite http://localhost:8000 (adresse de l'application, différente de l
 ### Session 05 — validation du formulaire
 
 ![Formulaire d'article affichant les erreurs de validation](screenshots/s05-formulaire.png)
+
+### Session 06
+
+![Formulaire de modification prérempli](screenshots/s06-modification.png)
+
+![Confirmation de suppression](screenshots/s06-suppression.png)
