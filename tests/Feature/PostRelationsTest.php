@@ -60,3 +60,57 @@ it('removes pivot rows when a post is deleted but preserves tags', function () {
     $this->assertDatabaseMissing('post_tag', ['post_id' => $post->id]);
     $this->assertDatabaseHas('tags', ['id' => $tag->id]);
 });
+
+it('shows up to three other published posts in the same category', function () {
+    $category = Category::factory()->create();
+    $post = Post::factory()->published()->create([
+        'category_id' => $category->id,
+        'title' => 'Article principal',
+    ]);
+
+    foreach (range(1, 4) as $day) {
+        Post::factory()->published()->create([
+            'category_id' => $category->id,
+            'title' => "Voisin publié {$day}",
+            'published_at' => now()->subDays($day),
+        ]);
+    }
+
+    Post::factory()->create([
+        'category_id' => $category->id,
+        'title' => 'Voisin brouillon',
+    ]);
+    Post::factory()->published()->create(['title' => 'Autre catégorie']);
+
+    $response = $this->get(route('posts.show', $post))
+        ->assertOk()
+        ->assertSee('Dans la même catégorie')
+        ->assertSee('Voisin publié 1')
+        ->assertSee('Voisin publié 2')
+        ->assertSee('Voisin publié 3')
+        ->assertDontSee('Voisin publié 4')
+        ->assertDontSee('Voisin brouillon')
+        ->assertDontSee('Autre catégorie');
+
+    $content = $response->getContent();
+    $sectionStart = strpos($content, '<section class="mt-12" aria-labelledby="related-title">');
+    $sectionEnd = strpos($content, '</section>', $sectionStart);
+    $section = substr($content, $sectionStart, $sectionEnd - $sectionStart);
+
+    expect($section)->not->toContain('Article principal');
+});
+
+it('hides the related section when there are no other published posts in the category', function () {
+    $post = Post::factory()->published()->create();
+
+    $this->get(route('posts.show', $post))
+        ->assertOk()
+        ->assertDontSee('Dans la même catégorie');
+
+    $category = Category::factory()->create();
+    $categorizedPost = Post::factory()->published()->create(['category_id' => $category->id]);
+
+    $this->get(route('posts.show', $categorizedPost))
+        ->assertOk()
+        ->assertDontSee('Dans la même catégorie');
+});
