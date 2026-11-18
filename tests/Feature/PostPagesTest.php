@@ -50,6 +50,43 @@ it('shows the create form', function () {
         ->assertSee('Nouvel article');
 });
 
+it('shows only the three most recently published posts on the home page', function () {
+    foreach ([
+        ['Article publie ancien', 'article-publie-ancien', now()->subDays(4)],
+        ['Article publie recent 1', 'article-publie-recent-1', now()->subDays(3)],
+        ['Article publie recent 2', 'article-publie-recent-2', now()->subDays(2)],
+        ['Article publie recent 3', 'article-publie-recent-3', now()->subDay()],
+    ] as [$title, $slug, $publishedAt]) {
+        Post::create([
+            'title' => $title,
+            'slug' => $slug,
+            'body' => 'Contenu publié suffisamment long pour cet article.',
+            'is_published' => true,
+            'published_at' => $publishedAt,
+        ]);
+    }
+
+    Post::create([
+        'title' => 'Article brouillon récent',
+        'slug' => 'article-brouillon-recent',
+        'body' => 'Ce brouillon ne doit pas apparaitre sur la page accueil.',
+        'is_published' => false,
+        'published_at' => now(),
+    ]);
+
+    $response = $this->get(route('home'))
+        ->assertOk()
+        ->assertSeeInOrder([
+            'Article publie recent 3',
+            'Article publie recent 2',
+            'Article publie recent 1',
+        ])
+        ->assertDontSee('Article publie ancien')
+        ->assertDontSee('Article brouillon récent');
+
+    expect(substr_count($response->getContent(), '<article'))->toBe(3);
+});
+
 it('validates required fields and preserves entered values', function () {
     $this->from(route('posts.create'))
         ->post(route('posts.store'), [

@@ -10,6 +10,7 @@ test('home renders the shared layout and success alert', function () {
     $this->get('/')
         ->assertOk()
         ->assertSee('Bienvenue sur Mini-CMS')
+        ->assertSee('Aucun article publié')
         ->assertSee('aria-current="page"', false);
 });
 
