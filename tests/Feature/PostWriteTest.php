@@ -17,6 +17,25 @@ function postData(array $overrides = []): array
     ], $overrides);
 }
 
+it('creates a post from the form', function () {
+    $this->post(route('posts.store'), postData())
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('posts', [
+        'title' => 'Article de test',
+        'slug' => 'article-de-test',
+        'excerpt' => 'Un extrait court.',
+    ]);
+});
+
+it('does not create a post without a title', function () {
+    $this->post(route('posts.store'), postData(['title' => '']))
+        ->assertRedirect()
+        ->assertSessionHasErrors('title');
+
+    $this->assertDatabaseMissing('posts', ['slug' => 'article-de-test']);
+});
+
 it('shows the edit form with the current values', function () {
     $post = Post::create(postData(['title' => 'Titre initial']));
 
@@ -45,7 +64,8 @@ it('refuses the slug of another post', function () {
 
     $this->put(route('posts.update', $post), postData(['slug' => 'slug-deja-pris']))
         ->assertRedirect()
-        ->assertSessionHasErrors('slug');
+        ->assertSessionHasErrors('slug')
+        ->assertSessionHas('_old_input.slug', 'slug-deja-pris');
 
     $this->assertDatabaseHas('posts', [
         'id' => $post->id,

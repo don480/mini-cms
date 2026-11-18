@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Post;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->withoutVite();
@@ -63,6 +64,28 @@ it('shows only published posts in the archive', function () {
         ->assertOk()
         ->assertSee('Article publié')
         ->assertDontSee('Article brouillon');
+});
+
+it('shows a manual excerpt or truncated body on post cards', function () {
+    Post::create([
+        'title' => 'Article avec extrait',
+        'slug' => 'article-avec-extrait',
+        'excerpt' => 'Extrait rédigé à la main.',
+        'body' => 'Texte complet de l’article avec un extrait.',
+    ]);
+
+    $fallbackBody = str_repeat('Texte de remplacement pour la carte. ', 6);
+
+    Post::create([
+        'title' => 'Article sans extrait',
+        'slug' => 'article-sans-extrait',
+        'body' => $fallbackBody,
+    ]);
+
+    $this->get(route('posts.index'))
+        ->assertOk()
+        ->assertSee('Extrait rédigé à la main.')
+        ->assertSee(Str::limit($fallbackBody, 120));
 });
 
 it('shows the create form', function () {
