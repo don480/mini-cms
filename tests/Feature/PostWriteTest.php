@@ -52,3 +52,12 @@ it('refuses the slug of another post', function () {
         'slug' => 'article-de-test',
     ]);
 });
+
+it('deletes a post', function () {
+    $post = Post::create(postData());
+
+    $this->delete(route('posts.destroy', $post))
+        ->assertRedirect(route('posts.index'));
+
+    $this->assertDatabaseMissing('posts', ['id' => $post->id]);
+});
