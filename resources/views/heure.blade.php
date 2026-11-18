@@ -1,5 +1,5 @@
 
-   <x-layout>
+<x-layout>
     <x-slot:title>Heure du serveur - Mini-CMS</x-slot:title>
 
     <h1 class="text-3xl font-bold">Heure du serveur</h1>
