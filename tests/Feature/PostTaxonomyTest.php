@@ -114,3 +114,44 @@ it('counts the published posts of each category on the home page', function () {
         ->assertOk()
         ->assertSee('Tutoriels (2)');
 });
+
+it('lists the published posts of a tag by its slug', function () {
+    $tag = Tag::factory()->create(['name' => 'Astuce', 'slug' => 'astuce']);
+    $published = Post::factory()->published()->create(['title' => 'Astuce publiee']);
+    $draft = Post::factory()->create(['title' => 'Astuce en brouillon']);
+    $published->tags()->attach($tag);
+    $draft->tags()->attach($tag);
+    Post::factory()->published()->create(['title' => 'Sans ce tag']);
+
+    $this->get('/posts/tag/astuce')
+        ->assertOk()
+        ->assertSee('Astuce publiee')
+        ->assertDontSee('Astuce en brouillon')
+        ->assertDontSee('Sans ce tag');
+});
+
+it('returns 404 for an unknown tag slug', function () {
+    $this->get('/posts/tag/inconnu')->assertNotFound();
+});
+
+it('shows only tags with published posts on the home page in popularity order', function () {
+    $hidden = Tag::factory()->create(['name' => 'Invisible']);
+    Post::factory()->create()->tags()->attach($hidden);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertDontSee('Tags populaires')
+        ->assertDontSee('Invisible');
+
+    $popular = Tag::factory()->create(['name' => 'Populaire']);
+    $alpha = Tag::factory()->create(['name' => 'Alpha']);
+    $beta = Tag::factory()->create(['name' => 'Beta']);
+    Post::factory(2)->published()->create()->each(fn (Post $post) => $post->tags()->attach($popular));
+    Post::factory()->published()->create()->tags()->attach($alpha);
+    Post::factory()->published()->create()->tags()->attach($beta);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSeeInOrder(['Populaire (2)', 'Alpha (1)', 'Beta (1)'])
+        ->assertDontSee('Invisible');
+});
