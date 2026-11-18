@@ -1,4 +1,4 @@
-@props(['post' => null])
+@props(['post' => null, 'categories'])
 
 <form method="POST" action="{{ $post ? route('posts.update', $post) : route('posts.store') }}" class="max-w-2xl space-y-5">
     @csrf
@@ -27,6 +27,19 @@
         <label for="excerpt" class="block text-sm font-medium text-gray-700">Extrait (facultatif, 255 caractères au plus)</label>
         <input type="text" id="excerpt" name="excerpt" value="{{ old('excerpt', $post?->excerpt) }}" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2">
         @error('excerpt')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <div>
+        <label for="category_id" class="block text-sm font-medium text-gray-700">Catégorie</label>
+        <select id="category_id" name="category_id" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2">
+            <option value="">Sans catégorie</option>
+            @foreach ($categories as $category)
+                <option value="{{ $category->id }}" @selected((string) old('category_id', $post?->category_id) === (string) $category->id)>{{ $category->name }}</option>
+            @endforeach
+        </select>
+        @error('category_id')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
     </div>
