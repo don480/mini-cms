@@ -6,11 +6,13 @@ Auteur : heni anas, groupe MDW32.
 
 Mini-CMS évoluera au fil du semestre vers une petite plateforme de publication : pages publiques, back-office authentifié, API JSON et tests Pest. Chaque session se termine par un tag Git (`lab-01`, `lab-01b`, puis un tag par session).
 
-## État actuel (tag lab-02b)
+## État actuel (session 05, tag lab-03)
 
 - Pages construites avec des composants Blade anonymes : `x-navbar`, `x-nav-link`, `x-post-card`, `x-alert`, `x-page-header`.
 - Lien actif dans la navigation avec `request()->routeIs()`.
-- Articles toujours stockés dans un tableau PHP, sans base de données pour l'instant.
+- Articles stockés dans SQLite et lus avec Eloquent; les listes sont paginées et les brouillons sont signalés.
+- Création d'article avec validation serveur, liaison de modèle sur la page de détail et affichage des trois derniers articles publiés sur l'accueil.
+- Tests Pest pour les pages, les articles, le formulaire et les erreurs de validation.
 
 ## Routes disponibles
 
@@ -21,7 +23,9 @@ Mini-CMS évoluera au fil du semestre vers une petite plateforme de publication 
 | GET | `/heure` | `time` | `PageController@time` |
 | GET | `/posts` | `posts.index` | `PostController@index` |
 | GET | `/posts/archive/{year}` | `posts.archive` | `PostController@archive` |
-| GET | `/posts/{slug}` | `posts.show` | `PostController@show` |
+| GET | `/posts/create` | `posts.create` | `PostController@create` |
+| POST | `/posts` | `posts.store` | `PostController@store` |
+| GET | `/posts/{post}` | `posts.show` | `PostController@show` |
 
 ## Prérequis
 
@@ -90,3 +94,11 @@ Ouvrir ensuite http://localhost:8000 (adresse de l'application, différente de l
 ### Session 04
 
 ![Liste des articles](screenshots/s04-articles.png)
+
+### Session 05 — articles et pagination
+
+![Liste paginée des articles, avec un brouillon](screenshots/s05-articles.png)
+
+### Session 05 — validation du formulaire
+
+![Formulaire d'article affichant les erreurs de validation](screenshots/s05-formulaire.png)
