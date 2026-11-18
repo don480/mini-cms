@@ -1,4 +1,4 @@
-@props(['post' => null, 'categories'])
+@props(['post' => null, 'categories', 'tags'])
 
 <form method="POST" action="{{ $post ? route('posts.update', $post) : route('posts.store') }}" class="max-w-2xl space-y-5">
     @csrf
@@ -43,6 +43,30 @@
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
     </div>
+
+    @php
+        $selectedTagIds = session()->hasOldInput()
+            ? old('tags', [])
+            : ($post?->tags->pluck('id')->all() ?? []);
+        $selectedTagIds = is_array($selectedTagIds) ? $selectedTagIds : [];
+    @endphp
+
+    <fieldset>
+        <legend class="block text-sm font-medium text-gray-700">Tags</legend>
+        <div class="mt-2 flex flex-wrap gap-4">
+            @foreach ($tags as $tag)
+                <label for="tag-{{ $tag->id }}" class="flex items-center gap-2 text-sm text-gray-700">
+                    <input type="checkbox" id="tag-{{ $tag->id }}" name="tags[]" value="{{ $tag->id }}" @checked(in_array($tag->id, $selectedTagIds))>
+                    {{ $tag->name }}
+                </label>
+            @endforeach
+        </div>
+        @foreach ($errors->getMessages() as $key => $messages)
+            @if ($key === 'tags' || str_starts_with($key, 'tags.'))
+                <p class="mt-1 text-sm text-red-600">{{ $messages[0] }}</p>
+            @endif
+        @endforeach
+    </fieldset>
 
     <div>
         <label for="body" class="block text-sm font-medium text-gray-700">Contenu</label>
