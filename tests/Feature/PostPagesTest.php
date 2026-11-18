@@ -44,6 +44,27 @@ it('returns 404 for an unknown post', function () {
     $this->get('/posts/999')->assertNotFound();
 });
 
+it('shows only published posts in the archive', function () {
+    Post::create([
+        'title' => 'Article publié',
+        'slug' => 'article-publie-archive',
+        'body' => 'Contenu publié pour tester l’archive.',
+        'is_published' => true,
+        'published_at' => now(),
+    ]);
+
+    Post::create([
+        'title' => 'Article brouillon',
+        'slug' => 'article-brouillon-archive',
+        'body' => 'Contenu brouillon à exclure de l’archive.',
+    ]);
+
+    $this->get(route('posts.archive', now()->year))
+        ->assertOk()
+        ->assertSee('Article publié')
+        ->assertDontSee('Article brouillon');
+});
+
 it('shows the create form', function () {
     $this->get(route('posts.create'))
         ->assertOk()
