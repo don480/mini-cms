@@ -1,6 +1,3 @@
-<div>
-    <!-- Nothing in life is to be feared, it is only to be understood. Now is the time to understand more, so that we may fear less. - Maria Skłodowska-Curie -->
-</div>
 @props(['post'])
 
 <article class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col gap-3">

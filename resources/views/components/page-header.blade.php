@@ -1,6 +1,3 @@
-<div>
-    <!-- The whole future lies in uncertainty: live immediately. - Seneca -->
-</div>
 @props(['title', 'subtitle' => null])
 
 <div class="mb-8">
