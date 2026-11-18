@@ -81,3 +81,34 @@ it('deletes a post', function () {
 
     $this->assertDatabaseMissing('posts', ['id' => $post->id]);
 });
+
+it('publishes a draft and sets its publication date', function () {
+    $post = Post::create(postData());
+
+    $this->patch(route('posts.publication', $post))
+        ->assertRedirect(route('posts.show', $post));
+
+    $this->assertDatabaseHas('posts', [
+        'id' => $post->id,
+        'is_published' => true,
+    ]);
+
+    expect($post->fresh()->published_at)->not->toBeNull();
+});
+
+it('unpublishes a post and clears its publication date', function () {
+    $post = Post::create(postData([
+        'is_published' => '1',
+        'published_at' => now(),
+    ]));
+
+    $this->patch(route('posts.publication', $post))
+        ->assertRedirect(route('posts.show', $post));
+
+    $this->assertDatabaseHas('posts', [
+        'id' => $post->id,
+        'is_published' => false,
+    ]);
+
+    expect($post->fresh()->published_at)->toBeNull();
+});

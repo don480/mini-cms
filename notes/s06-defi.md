@@ -1,0 +1,12 @@
+# Session 06 - Défi : publier et dépublier
+
+La route `posts.publication` apparaît dans `route:list` avec le verbe PATCH : oui
+
+Le bouton affiche « Publier » sur un brouillon et « Dépublier » sur un article publié : oui
+
+`published_at` est rempli à la publication et vidé à la dépublication : oui
+
+Le test passe et `php artisan test` est vert : oui
+
+Pourquoi PATCH et pas PUT ni GET pour ce bouton ?
+PATCH décrit une modification partielle de l'article, limitée à son état de publication. PUT remplace l'ensemble des données de la ressource et GET doit rester sans effet sur la base.

@@ -88,6 +88,27 @@ it('shows a manual excerpt or truncated body on post cards', function () {
         ->assertSee(Str::limit($fallbackBody, 120));
 });
 
+it('shows the publication action for the current post state', function () {
+    $post = Post::create([
+        'title' => 'Article brouillon',
+        'slug' => 'article-publication-toggle',
+        'body' => 'Contenu assez long pour valider cet article.',
+    ]);
+
+    $this->get(route('posts.show', $post))
+        ->assertOk()
+        ->assertSee('Publier')
+        ->assertDontSee('Dépublier');
+
+    $post->update([
+        'is_published' => true,
+        'published_at' => now(),
+    ]);
+
+    $this->get(route('posts.show', $post))
+        ->assertSee('Dépublier');
+});
+
 it('shows the create form', function () {
     $this->get(route('posts.create'))
         ->assertOk()
