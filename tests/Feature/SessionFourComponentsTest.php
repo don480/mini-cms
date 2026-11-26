@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Post;
+use App\Models\User;
 
 beforeEach(function () {
     $this->withoutVite();
@@ -37,7 +38,8 @@ test('article index renders four cards and marks the articles navigation active'
         ]);
     }
 
-    $response = $this->get('/posts')
+    $response = $this->actingAs(User::factory()->admin()->create())
+        ->get('/posts')
         ->assertOk()
         ->assertSee('Article 1')
         ->assertSee('Brouillon')

@@ -1,10 +1,12 @@
 <?php
 
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->withoutVite();
+    $this->actingAs(User::factory()->admin()->create());
 });
 
 it('shows the posts list', function () {
@@ -109,8 +111,9 @@ it('shows the publication action for the current post state', function () {
         ->assertSee('Dépublier');
 });
 
-it('shows the create form', function () {
-    $this->get(route('posts.create'))
+it('shows the create form to a logged-in user', function () {
+    $this->actingAs(User::factory()->create())
+        ->get(route('posts.create'))
         ->assertOk()
         ->assertSee('Nouvel article');
 });

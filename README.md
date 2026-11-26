@@ -6,12 +6,16 @@ Auteur : heni anas, groupe MDW32.
 
 Mini-CMS évoluera au fil du semestre vers une petite plateforme de publication : pages publiques, back-office authentifié, API JSON et tests Pest. Chaque session se termine par un tag Git (`lab-01`, `lab-01b`, puis un tag par session).
 
-## État actuel (tag lab-05b)
+## État actuel (tag lab-07)
 
-- Back-office des catégories et des tags sous `/admin` (`CategoryController`, `TagController`), protégé par le middleware `writable`, avec Form Requests et messages flash.
-- Messages de validation en français (`lang/fr/validation.php`, `APP_LOCALE=fr`), avec des noms de champs lisibles et un message propre au slug des catégories.
-- Pages 404 et 503 affichées dans le layout du site (`resources/views/errors`).
-- Tests Pest : `PostPagesTest`, `PostWriteTest`, `PostRelationsTest`, `PostTaxonomyTest`, `PostFeedbackTest`, `CategoryAdminTest`, `TagAdminTest` et `ErrorPagesTest`.
+- Comptes écrits à la main : inscription (`/inscription`), connexion (`/connexion`) et déconnexion, avec `Hash::make`, `Auth::attempt` et la régénération de session.
+- Colonne `role` (`author` par défaut, `admin`). Après `php artisan migrate:fresh --seed`, le compte de démonstration `test@example.com` (mot de passe `password`) est administrateur.
+- Écritures réservées aux utilisateurs connectés (`auth`) ; chaque nouvel article est attaché à son auteur.
+- API JSON en lecture seule, installée avec `php artisan install:api` (Sanctum installé ; les jetons arrivent en session 14).
+- `GET /api/posts` : articles publiés, paginés (`?per_page=` de 1 à 50, 5 par défaut), avec auteur, catégorie et tags.
+- `GET /api/posts/{post}` : un article publié ; un brouillon renvoie 403 et un numéro inconnu 404, en JSON.
+- Réponses mises en forme par `PostResource` et `CategoryResource` : ni e-mail ni rôle des auteurs, dates ISO 8601.
+- Testée avec `Accept: application/json` et les réponses JSON de validation.
 
 ## Données de démonstration
 
@@ -47,6 +51,13 @@ Après un clone, reconstruire la base avec `php artisan migrate:fresh --seed`. A
 | GET | `/admin/tags/{tag}/edit` | `admin.tags.edit` | `TagController@edit` |
 | PUT | `/admin/tags/{tag}` | `admin.tags.update` | `TagController@update` |
 | DELETE | `/admin/tags/{tag}` | `admin.tags.destroy` | `TagController@destroy` |
+| GET | `/inscription` | `register` | `Auth\RegisterController@create` |
+| POST | `/inscription` | `register.store` | `Auth\RegisterController@store` |
+| GET | `/connexion` | `login` | `Auth\LoginController@create` |
+| POST | `/connexion` | `login.store` | `Auth\LoginController@store` |
+| POST | `/deconnexion` | `logout` | `Auth\LoginController@destroy` |
+| GET | `/api/posts` | `api.posts.index` | `Api\PostController@index` |
+| GET | `/api/posts/{post}` | `api.posts.show` | `Api\PostController@show` |
 
 ## Prérequis
 
@@ -155,3 +166,32 @@ Back-office des catégories et des tags, messages de validation en français, pa
 ![Formulaire de catégorie envoyé vide, avec les messages de validation en français](screenshots/s10-validation.png)
 
 ![Page 404 du site pour une adresse inconnue](screenshots/s10-404.png)
+
+### Session 13
+
+![Postman : réponse JSON de GET /api/posts?per_page=2, avec data, links et meta](screenshots/s13-postman-liste.png)
+
+![Postman : réponse 422 de GET /api/posts?per_page=500, avec le message en français](screenshots/s13-postman-422.png)
+
+## Comparaison avec le starter kit Livewire
+
+| Critère | Mini-CMS (authentification manuelle) | Starter kit Livewire |
+|---|---|---|
+| Routes d'authentification | `/inscription`, `/connexion` et `/deconnexion` sont déclarées dans `routes/web.php`. | Fortify fournit les routes du paquet, sans interface, puis Livewire ajoute les écrans. |
+| Inscription | `Auth\RegisterController`, `RegisterRequest` et `Hash::make` pour créer l'utilisateur. | `app/Actions/Fortify/CreateNewUser.php` utilise `Validator::make`, puis crée l'utilisateur. |
+| Connexion | `Auth\LoginController::store` utilise `Auth::attempt` puis `session()->regenerate()`. | Les écrans Livewire utilisent les contrôleurs Fortify pour gérer la connexion. |
+| Déconnexion | `Auth\LoginController::destroy` appelle `logout`, invalide la session et régénère le jeton CSRF. | `app/Livewire/Actions/Logout.php` réalise les mêmes opérations. |
+| Limitation des tentatives | Mini-CMS ne limite pas encore les tentatives de connexion. | Fortify limite les tentatives à cinq par minute par e-mail et adresse IP. |
+| Mot de passe oublié | Non implémenté dans Mini-CMS. | `Features::resetPasswords()` est activé par le starter kit. |
+| Vérification de l'e-mail | Non implémentée dans Mini-CMS. | `Features::emailVerification()` est activé avec `MustVerifyEmail` et le middleware `verified`. |
+| Double authentification | Non implémentée dans Mini-CMS. | `Features::twoFactorAuthentication()` est disponible dans Fortify. |
+| Rôles et autorisations | La colonne `role`, `isAdmin()`, les Gates, `PostPolicy` et le middleware `admin` sont écrits dans Mini-CMS. | Le starter kit n'ajoute aucun rôle : les autorisations restent à écrire. |
+| Tests | Pest couvre l'authentification, les catégories, les tags et la visibilité des articles. | Le dépôt du kit contient environ dix fichiers PHPUnit pour l'authentification, les réglages et le tableau de bord. |
+
+Ce que je garderais du kit dans un vrai projet : son socle Fortify avec limitation des tentatives, récupération et vérification du mot de passe. Je garderais aussi ses composants Livewire pour les écrans complets, tout en conservant des Gates, des Policies et des tests ciblés pour les autorisations propres à l'application.
+
+### Session 12
+
+![Page 403 « Réservé aux administrateurs. » pour un compte auteur sur /admin/tags](screenshots/s12-admin-interdit.png)
+
+![Barre de navigation d'un compte auteur, sans les liens Catégories et Tags](screenshots/s12-menu-auteur.png)
